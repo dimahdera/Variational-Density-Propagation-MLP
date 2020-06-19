@@ -350,7 +350,7 @@ def main_function( input_dim = 10, units = 256, output_size = 2 , batch_size = 2
           if Random_noise:
               noise = tf.random.normal(shape = [batch_size, input_dim], mean = 0.0, stddev = gaussain_noise_std, dtype = x.dtype ) 
               x = x +  noise 
-        
+          #loss_layers = sum(mlp_model.losses) 
           logits, sigma = mlp_model(x)  
           logits_[test_no_steps,:,:] =logits
           sigma_[test_no_steps, :, :, :]= sigma
