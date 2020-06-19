@@ -96,13 +96,13 @@ class LinearFirst(keras.layers.Layer):
         mu_out = tf.matmul(inputs, self.w_mu) + self.b_mu                         # Mean of the output
         # Varinace
         W_Sigma = tf.linalg.diag(tf.math.log(1. + tf.math.exp(self.w_sigma)))                                        
-        Sigma_out = x_Sigma_w_x_T(inputs, W_Sigma) + tf.math.log(1. + tf.math.exp(self.b_sigma)) 
-
-        Term1 = tf.reduce_mean(tf.math.log(1.0 + Sigma_out))
-        Term2 = tf.reduce_mean(tf.square(mu_out))
-        Term3 = tf.reduce_mean(Sigma_out)
-      
-        kl_loss = -0.5 * (Term1 - Term2 - Term3)
+        Sigma_out = x_Sigma_w_x_T(inputs, W_Sigma) + tf.math.log(1. + tf.math.exp(self.b_sigma))         
+                
+        Term1 = self.w_mu.shape[0]*tf.math.log(tf.math.log(1. + tf.math.exp(self.w_sigma)))
+        Term2 = tf.reduce_sum(tf.reduce_sum(tf.abs(self.w_mu)))
+        Term3 = self.w_mu.shape[0]*tf.math.log(1. + tf.math.exp(self.w_sigma))
+             
+        kl_loss = -0.5 * tf.reduce_mean(Term1 - Term2 - Term3)
         self.add_loss(kl_loss)
 
         return mu_out, Sigma_out
@@ -146,10 +146,12 @@ class LinearNotFirst(keras.layers.Layer):
         Sigma_3 = tr_Sigma_w_Sigma_in (Sigma_in, W_Sigma)
         Sigma_out = Sigma_1 + Sigma_2 + Sigma_3 + tf.linalg.diag(tf.math.log(1. + tf.math.exp(self.b_sigma))) 
         
-        Term1 = tf.reduce_mean(tf.math.log(1.0 + Sigma_out))
-        Term2 = tf.reduce_mean(tf.square(mu_out))
-        Term3 = tf.reduce_mean(Sigma_out)
-        kl_loss = -0.5 * (Term1 - Term2 - Term3)
+        Term1 = self.w_mu.shape[0]*tf.math.log(tf.math.log(1. + tf.math.exp(self.w_sigma)))
+        Term2 = tf.reduce_sum(tf.reduce_sum(tf.abs(self.w_mu)))
+        Term3 = self.w_mu.shape[0]*tf.math.log(1. + tf.math.exp(self.w_sigma))
+        
+        
+        kl_loss = -0.5 * tf.reduce_mean(Term1 - Term2 - Term3)
         self.add_loss(kl_loss)
         return mu_out, Sigma_out
 
@@ -244,7 +246,7 @@ def main_function( input_dim = 10, units = 256, output_size = 2 , batch_size = 2
                                        clip_value_max=tf.constant(1e+10)), output_size , batch_size)
             #loss_layers = sum(mlp_model.losses)
 
-            loss = loss_final #+ loss_layers
+            loss = loss_final #+0.001* loss_layers
             gradients = tape.gradient(loss, mlp_model.trainable_weights)
         optimizer.apply_gradients(zip(gradients, mlp_model.trainable_weights))        
         return loss, logits
@@ -352,7 +354,7 @@ def main_function( input_dim = 10, units = 256, output_size = 2 , batch_size = 2
           logits, sigma = mlp_model(x)  
           logits_[test_no_steps,:,:] =logits
           sigma_[test_no_steps, :, :, :]= sigma
-          tloss = nll_gaussian(y, logits,  tf.clip_by_value(t=sigma, clip_value_min=tf.constant(-1e+10), clip_value_max=tf.constant(1e+10)), output_size , batch_size)
+          tloss = nll_gaussian(y, logits,  tf.clip_by_value(t=sigma, clip_value_min=tf.constant(-1e+10), clip_value_max=tf.constant(1e+10)), output_size , batch_size)#+0.001*loss_layers
           err_test+= tloss
           
           corr = tf.equal(tf.math.argmax(logits, axis=1),tf.math.argmax(y,axis=1))
