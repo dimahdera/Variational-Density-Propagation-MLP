@@ -1,0 +1,10 @@
+ Input Dimension : 10
+ No Hidden Nodes : 256
+ Output Size : 2
+ No of epochs : 5
+ Learning rate : 0.001
+---------------------------------
+ Averaged Test Accuracy : 0.92830884
+ Averaged Test error : -6.1207952
+---------------------------------
+---------------------------------

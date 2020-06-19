@@ -1,0 +1,11 @@
+ Input Dimension : 10
+ No Hidden Nodes : 256
+ Output Size : 2
+ No of epochs : 5
+ Learning rate : 0.001
+---------------------------------
+ Total run time in sec : 48.81635519500014
+ Averaged Training  Accuracy : 0.9427730917930603
+ Averaged Training  error : -6.157131481170654
+---------------------------------
+---------------------------------
